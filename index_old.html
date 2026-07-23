@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Resume Studio - Standalone</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f5f7fb;
+        --card: #ffffff;
+        --line: #e2e8f0;
+        --ink: #0f172a;
+        --muted: #64748b;
+        --accent: #111827;
+        --accent-soft: #f8fafc;
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+        background: linear-gradient(135deg, #f8fafc 0%, var(--bg) 100%);
+        color: var(--ink);
+      }
+
+      button, input, select, textarea { font: inherit; }
+
+      .shell { min-height: 100vh; padding: 20px; }
+      .toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        padding: 16px 18px;
+        margin-bottom: 16px;
+        border-radius: 24px;
+        background: rgba(255,255,255,0.9);
+        border: 1px solid rgba(148,163,184,0.25);
+        box-shadow: 0 18px 45px rgba(15,23,42,0.08);
+        backdrop-filter: blur(12px);
+      }
+
+      .toolbar h1 { margin: 0; font-size: 20px; }
+      .toolbar p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+      .toolbar-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+      .btn {
+        border: 1px solid var(--line);
+        background: white;
+        color: var(--ink);
+        border-radius: 999px;
+        padding: 9px 12px;
+        cursor: pointer;
+        transition: 180ms ease;
+      }
+      .btn:hover { border-color: #cbd5e1; background: #f8fafc; }
+      .btn.primary { background: var(--accent); color: white; border-color: var(--accent); }
+      .btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+      .layout {
+        display: grid;
+        grid-template-columns: minmax(320px, 460px) 1fr;
+        gap: 16px;
+        align-items: start;
+      }
+      .panel {
+        background: var(--card);
+        border: 1px solid rgba(226,232,240,0.95);
+        border-radius: 24px;
+        box-shadow: 0 18px 45px rgba(15,23,42,0.08);
+      }
+      .editor-panel { padding: 18px; overflow: auto; max-height: calc(100vh - 140px); }
+      .preview-panel { padding: 18px; }
+      .editor-panel.collapsed { display: none; }
+
+      .section { border: 1px solid #eef2f7; border-radius: 18px; padding: 12px; margin-bottom: 12px; background: #fcfdff; }
+      .section-header {
+        display: flex; align-items: center; justify-content: space-between; cursor: pointer; font-weight: 700; color: var(--ink);
+      }
+      .section-body { margin-top: 10px; display: grid; gap: 10px; }
+      .field { display: grid; gap: 6px; }
+      .field label { font-size: 12px; font-weight: 600; color: #334155; }
+      .field input, .field textarea, .field select {
+        width: 100%; border: 1px solid var(--line); border-radius: 12px; padding: 9px 10px; background: white; color: var(--ink);
+      }
+      .field textarea { min-height: 110px; resize: vertical; }
+      .inline-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+      .muted { color: var(--muted); font-size: 12px; }
+      .sub-card { border: 1px solid #eef2f7; border-radius: 14px; padding: 10px; background: white; }
+      .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+      .chip { background: #f8fafc; border: 1px solid var(--line); padding: 6px 9px; border-radius: 999px; font-size: 12px; color: #334155; }
+      .small-btn {
+        border: 1px solid var(--line); background: white; border-radius: 999px; padding: 6px 10px; font-size: 12px; cursor: pointer;
+      }
+      .small-btn:hover { background: #f8fafc; }
+      .preview-toolbar {
+        display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap;
+      }
+      .preview-toolbar .controls { display: flex; align-items: center; gap: 8px; }
+      .page {
+        width: min(100%, 210mm);
+        min-height: 297mm;
+        margin: 0 auto;
+        background: white;
+        color: #0f172a;
+        box-shadow: 0 10px 40px rgba(15,23,42,0.12);
+        border-radius: 10px;
+        padding: 14mm 14mm 14mm 14mm;
+        box-sizing: border-box;
+      }
+      .header-card {
+        border: 1px solid #e2e8f0; border-radius: 14px; background: #f8fafc; padding: 14px;
+      }
+      .header-top { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+      .profile-badge { display: inline-block; padding: 4px 8px; border-radius: 999px; font-size: 8px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; background: #111827; color: white; }
+      .name { margin: 10px 0 0; font-size: 19px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.16em; }
+      .title { margin: 6px 0 0; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.16em; color: #334155; }
+      .contact-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+      .contact-pill { border: 1px solid #cbd5e1; border-radius: 999px; padding: 5px 8px; font-size: 9px; font-weight: 600; color: #334155; background: white; }
+      .photo-box {
+        flex-shrink: 0; width: 35mm; height: 45mm; border: 1px solid #cbd5e1; border-radius: 0; overflow: hidden; background: #e2e8f0; display: flex; align-items: center; justify-content: center; color: #64748b;
+      }
+      .photo-box img { width: 100%; height: 100%; object-fit: cover; }
+      .section-heading {
+        display: flex; align-items: center; gap: 8px; margin-top: 10px; margin-bottom: 8px;
+      }
+      .section-heading .line { flex: 1; height: 1px; background: #cbd5e1; }
+      .section-heading .text { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.18em; color: #475569; }
+      .summary-box, .entry-box, .education-box, .skill-line { border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px 10px; background: white; }
+      .entry-box { margin-bottom: 8px; }
+      .entry-top { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+      .entry-title { font-size: 11px; font-weight: 700; color: #0f172a; }
+      .entry-meta { font-size: 9px; color: #64748b; }
+      .project-box { border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px; margin-top: 8px; background: #f8fafc; }
+      .project-head { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+      .project-title { font-size: 10px; font-weight: 700; color: #334155; }
+      ul { margin: 6px 0 0 16px; padding: 0; }
+      li { margin-top: 3px; font-size: 9px; color: #334155; }
+      .education-row { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; margin-bottom: 8px; }
+      .skill-line strong { color: #0f172a; }
+      .hidden { display: none; }
+
+      @media (max-width: 1000px) {
+        .layout { grid-template-columns: 1fr; }
+        .editor-panel { max-height: none; }
+      }
+
+      @media print {
+        body { background: white; }
+        .shell { padding: 0; }
+        .toolbar, .editor-panel, .preview-toolbar { display: none !important; }
+        .page { box-shadow: none; border-radius: 0; margin: 0; width: 100%; min-height: auto; padding: 0; }
+      }
+    
+      .shell{padding:12px}.toolbar{border-radius:14px;padding:11px 14px;margin-bottom:12px}
+      .layout{grid-template-columns:minmax(310px,390px) minmax(0,1fr);gap:12px}
+      .panel{border-radius:14px}.editor-panel{padding:10px;max-height:calc(100vh - 95px)}
+      .preview-panel{padding:12px;overflow:auto;min-height:calc(100vh - 95px)}
+      .section{border-radius:10px;padding:10px;margin-bottom:8px}.section-header{font-size:13px}
+      .field input,.field textarea,.field select{border-radius:8px;padding:7px 8px}.sub-card{border-radius:8px;padding:8px}
+      .preview-toolbar{position:sticky;top:0;z-index:3;background:rgba(255,255,255,.96);padding:4px 0 8px}
+      .page{border-radius:0}@page{size:A4;margin:0}
+      @media print{html,body{width:210mm;min-height:297mm}.layout,.preview-panel{display:block!important;padding:0!important;margin:0!important;border:0!important;box-shadow:none!important}#previewContainer{transform:none!important}.page{width:210mm!important;min-height:297mm!important;max-width:none!important;transform:none!important}}
+
+    
+      /* Refined application chrome only — resume/PDF design remains unchanged */
+      :root{
+        --bg:#edf3f8;
+        --card:#fbfdff;
+        --line:#d7e2ec;
+        --ink:#172033;
+        --muted:#6b7c91;
+        --accent:#243b5a;
+        --accent-soft:#eaf1f7;
+      }
+      body{
+        background:
+          radial-gradient(circle at 12% 8%, rgba(190,214,232,.42), transparent 27%),
+          radial-gradient(circle at 92% 18%, rgba(215,225,239,.52), transparent 30%),
+          linear-gradient(135deg,#f6f9fc 0%,#edf3f8 52%,#f4f7fb 100%);
+      }
+      .toolbar{
+        background:rgba(252,254,255,.92);
+        border-color:rgba(164,185,204,.42);
+        box-shadow:0 12px 34px rgba(42,64,88,.09);
+      }
+      .toolbar h1{color:#1f3652}
+      .btn{border-color:#d4e0ea;background:#fbfdff}
+      .btn:hover{background:#eef4f8;border-color:#b9cad8}
+      .btn.primary,.btn.active{background:#243b5a;border-color:#243b5a;color:#fff}
+      .panel{
+        background:rgba(252,254,255,.94);
+        border-color:#dbe5ed;
+        box-shadow:0 14px 38px rgba(42,64,88,.08);
+      }
+      .section{background:#f8fbfd;border-color:#e2eaf0}
+      .sub-card{border-color:#e1e9ef}
+      .preview-panel{background:rgba(246,249,252,.78)}
+      .preview-toolbar{background:rgba(246,249,252,.94)}
+      .full-view-exit{display:none}
+
+      /* Full PDF View */
+      body.full-pdf-view{overflow:auto}
+      body.full-pdf-view .shell{padding:0;min-height:100vh}
+      body.full-pdf-view .toolbar,
+      body.full-pdf-view .editor-panel,
+      body.full-pdf-view .preview-toolbar{display:none!important}
+      body.full-pdf-view .layout{
+        display:block;
+        min-height:100vh;
+      }
+      body.full-pdf-view .preview-panel{
+        min-height:100vh;
+        padding:24px 24px 48px;
+        border:0;
+        border-radius:0;
+        box-shadow:none;
+        background:
+          radial-gradient(circle at 50% 0%,rgba(204,220,233,.35),transparent 34%),
+          #e9f0f5;
+        overflow:visible;
+      }
+      body.full-pdf-view #previewContainer{
+        display:flex;
+        justify-content:center;
+        align-items:flex-start;
+        width:100%;
+        transform:none!important;
+      }
+      body.full-pdf-view .page{
+        flex:0 0 auto;
+        margin:0 auto;
+        box-shadow:0 18px 55px rgba(34,52,70,.18);
+      }
+      body.full-pdf-view .full-view-exit{
+        display:block;
+        position:fixed;
+        top:18px;
+        right:22px;
+        z-index:50;
+        border:1px solid rgba(255,255,255,.55);
+        background:rgba(36,59,90,.92);
+        color:#fff;
+        border-radius:999px;
+        padding:9px 14px;
+        cursor:pointer;
+        box-shadow:0 8px 24px rgba(30,48,68,.2);
+        backdrop-filter:blur(10px);
+      }
+      @media(max-width:700px){
+        body.full-pdf-view .preview-panel{padding:12px 4px 30px}
+        body.full-pdf-view .full-view-exit{top:10px;right:10px}
+      }
+
+    </style>
+  </head>
+  <body>
+    <button class="full-view-exit" id="exitFullView">Back to Editor</button>
+    <div class="shell">
+      <div class="toolbar">
+        <div>
+          <h1>Resume Studio</h1>
+          <p>A standalone HTML version of the editor and live preview experience.</p>
+        </div>
+        <div class="toolbar-actions">
+          <button class="btn" id="toggleEditor">Hide editor</button>
+          <button class="btn active" id="viewSplit">Edit + Preview</button>
+          <button class="btn" id="viewPreview">Full PDF View</button>
+          <button class="btn primary" id="printPdf">Download PDF</button>
+        </div>
+      </div>
+
+      <div class="layout">
+        <aside class="panel editor-panel" id="editorPanel">
+          <div class="section">
+            <div class="section-header"><span>Personal Information</span><span>👤</span></div>
+            <div class="section-body" id="personalInfoSection"></div>
+          </div>
+
+          <div class="section">
+            <div class="section-header"><span>Professional Summary</span><span>✍️</span></div>
+            <div class="section-body" id="summarySection"></div>
+          </div>
+
+          <div class="section">
+            <div class="section-header"><span>Technical Skills</span><span>🛠️</span></div>
+            <div class="section-body" id="skillsSection"></div>
+          </div>
+
+          <div class="section">
+            <div class="section-header"><span>Experience</span><span>💼</span></div>
+            <div class="section-body" id="experienceSection"></div>
+          </div>
+
+          <div class="section">
+            <div class="section-header"><span>Education</span><span>🎓</span></div>
+            <div class="section-body" id="educationSection"></div>
+          </div>
+
+          <div class="section">
+            <div class="section-header"><span>Profile Photo</span><span>📷</span></div>
+            <div class="section-body" id="photoSection"></div>
+          </div>
+
+          <div class="section">
+            <div class="section-header"><span>Layout</span><span>🎨</span></div>
+            <div class="section-body" id="layoutSection"></div>
+          </div>
+        </aside>
+
+        <main class="panel preview-panel">
+          <div class="preview-toolbar">
+            <div>
+              <strong>Live A4 Preview</strong>
+              <div class="muted">The page stays centered and updates instantly as you edit.</div>
+            </div>
+            <div class="controls">
+              <label class="muted">Preview Zoom
+                <select id="zoomSelect">
+                  <option value="0.75">75%</option>
+                  <option value="0.9">90%</option>
+                  <option value="1" selected>100%</option>
+                </select>
+              </label>
+            </div>
+          </div>
+          <div id="previewContainer" style="transform-origin: top center;"></div>
+        </main>
+      </div>
+    </div>
+
+    <script>
+      const initialResume = {
+        personalInfo:{name:'IPSIT KUMAR DHAL',title:'Guidewire Integration Developer | ClaimCenter | Guidewire Cloud',email:'ipsitdhal.bapi@gmail.com',phone:'+91 8456916821',location:'',photo:''},
+        summary:{text:'Guidewire Integration Developer with experience in ClaimCenter, PolicyCenter, and Guidewire Cloud migration, specializing in enterprise integration development and modernization. Hands-on expertise in Gosu, Java, REST/SOAP, S3 file-based integrations, batch processing, messaging, integration security, and JDK 21-compatible integration upgrades. Experienced across the cloud migration lifecycle including legacy integration analysis, cloud-compliant development, custom REST APIs, REST client libraries, runtime configuration, testing, troubleshooting, and release readiness, with strong ownership of cross-team dependencies and complex defect resolution.'},
+        skills:[
+          {category:'Guidewire',skills:'ClaimCenter, PolicyCenter, Guidewire Cloud, Gosu, GUnit, Plugins, Batch Processing, Work Queues, Messaging, Admin Data, Runtime Properties'},
+          {category:'Integration',skills:'REST, SOAP, JAX-WS, File-Based Integration, AWS S3, OAuth2, WS-Security, mTLS, XML/JSON, Custom REST APIs, REST Clients'},
+          {category:'Development',skills:'Java, JDK 21, Gosu, SQL, Spring'},
+          {category:'Tools',skills:'Postman, SOAP UI, Datadog, Splunk, Git, TeamCity, JFrog, DBeaver, IntelliJ/Eclipse'},
+          {category:'Core',skills:'Cloud Migration, Integration Modernization, Multithreading, Chunk Processing, Defect Triage, Root Cause Analysis, Cross-Team Coordination'}
+        ],
+        experience:[
+          {company:'PwC US',designation:'Associate 2 – Guidewire Integration Developer',startDate:'Mar 2025',endDate:'Present',projects:[
+            {client:'Leading UK Insurance Client',projectTitle:'Guidewire Cloud Migration',dates:'Feb 2026 – Present',bullets:[
+              'Migrating ClaimCenter and PolicyCenter integrations to Guidewire Cloud across legacy analysis, cloud-compliant development, configuration, testing, and environment readiness.',
+              'Developed and migrated REST, SOAP, and S3-based file integrations, including custom REST APIs and REST client libraries for external-system communication.',
+              'Supported JDK 21-compatible integration upgrades and remediation of legacy integration components during cloud migration.',
+              'Implemented OAuth2, WS-Security, mTLS, endpoints, credentials, proxies, runtime properties, and admin data for secure environment-specific integrations.',
+              'Developed cloud-compatible alternatives for legacy integration patterns and resolved migration-specific technical and environment constraints.',
+              'Supported local, dry-run, and performance environments, resolving integration, GUnit, connectivity, configuration, and deployment issues.',
+              'Performed complex defect investigation and root-cause analysis using Datadog, Splunk, Postman, SOAP UI, and HTTP/request-response traces.',
+              'Coordinated technical dependencies across development, QA, security, infrastructure, and upstream/downstream teams for migration and release readiness.'
+            ]},
+            {client:'Leading Canadian Insurance Client',projectTitle:'Guidewire Integration Development',dates:'May 2025 – Jan 2026',bullets:[
+              'Developed ClaimCenter and PolicyCenter integrations across REST/SOAP services, S3 file processing, batch processing, messaging, and external systems.',
+              'Designed and optimized an S3 file-based payment processing batch using Guidewire chunk processing with multithreaded workers, improving processing throughput by approximately 15×.',
+              'Modernized legacy batch integrations from direct JDBC processing to REST API-based integration patterns.',
+              'Built reusable utilities for runtime endpoint configuration, credential/proxy handling, request logging, and XML/JSON validation.',
+              'Developed automated XML comparison and Policy Retrieve validation utilities, reducing manual testing across large policy volumes.',
+              'Supported integration delivery through defect analysis, release support, impact assessment, and cross-team coordination.'
+            ]}
+          ]},
+          {company:'Capgemini',designation:'Senior Software Engineer – Guidewire ClaimCenter Developer',startDate:'Sep 2022',endDate:'Mar 2025',projects:[
+            {client:'UK Insurance Client',projectTitle:'Guidewire ClaimCenter Integration Development',dates:'Sep 2022 – Mar 2025',bullets:[
+              'Developed and supported Guidewire ClaimCenter v10 integrations and production enhancements.',
+              'Integrated an external repair-vendor platform using REST APIs, batch processes, work queues, and messaging.',
+              'Implemented work-queue-based exception handling for external payment failures.',
+              'Optimized processing using Guidewire Admin Data, reducing server load and resolving HTTP 502-related failures.',
+              'Developed automated activity processing based on recovery-reserve changes and enhanced XML validation for external claim-system integrations.',
+              'Supported production defects, root-cause analysis, and integration enhancements.'
+            ]}
+          ]}
+        ],
+        education:[
+          {degree:'M.Tech – Machine Design',institution:'National Institute of Technology, Rourkela',dates:'2020 – 2022',score:'CGPA: 9.51/10'},
+          {degree:'B.Tech – Mechanical Engineering',institution:'Indira Gandhi Institute of Technology, Sarang',dates:'2014 – 2018',score:'CGPA: 7.53/10'}
+        ],
+        layout:{fontSize:9.2,lineHeight:1.22,sectionSpacing:4,bulletSpacing:1.1,marginTop:10,marginBottom:10,marginLeft:11,marginRight:11,photoWidth:35,photoHeight:45,photoZoom:1,photoPositionX:50,photoPositionY:50,photoBorderRadius:0,showPhoto:true}
+      };
+
+      let resume = JSON.parse(JSON.stringify(initialResume));
+      const editorPanel = document.getElementById('editorPanel');
+      const previewContainer = document.getElementById('previewContainer');
+      const zoomSelect = document.getElementById('zoomSelect');
+
+      function render() {
+        renderEditor();
+        renderPreview();
+      }
+
+      function renderEditor() {
+        document.getElementById('personalInfoSection').innerHTML = `
+          <div class="inline-grid">
+            <div class="field"><label>Name</label><input data-field="name" value="${escapeHtml(resume.personalInfo.name)}" /></div>
+            <div class="field"><label>Title</label><input data-field="title" value="${escapeHtml(resume.personalInfo.title)}" /></div>
+          </div>
+          <div class="inline-grid">
+            <div class="field"><label>Email</label><input data-field="email" value="${escapeHtml(resume.personalInfo.email)}" /></div>
+            <div class="field"><label>Phone</label><input data-field="phone" value="${escapeHtml(resume.personalInfo.phone)}" /></div>
+          </div>
+          <div class="field"><label>Location</label><input data-field="location" value="${escapeHtml(resume.personalInfo.location)}" /></div>
+        `;
+
+        document.getElementById('summarySection').innerHTML = `
+          <div class="field">
+            <label>Professional Summary</label>
+            <textarea data-summary="text">${escapeHtml(resume.summary.text)}</textarea>
+          </div>
+        `;
+
+        document.getElementById('skillsSection').innerHTML = `
+          <div class="chip-row">
+            ${resume.skills.map((group, index) => `<span class="chip">${escapeHtml(group.category)}</span>`).join('')}
+          </div>
+          ${resume.skills.map((group, index) => `
+            <div class="sub-card">
+              <div class="inline-grid">
+                <div class="field"><label>Category</label><input data-skill-index="${index}" data-skill-field="category" value="${escapeHtml(group.category)}" /></div>
+                <div class="field"><label>Skills</label><input data-skill-index="${index}" data-skill-field="skills" value="${escapeHtml(group.skills)}" /></div>
+              </div>
+              <div class="field" style="margin-top:8px;"><button class="small-btn" data-remove-skill="${index}">Remove skill group</button></div>
+            </div>
+          `).join('')}
+          <button class="small-btn" id="addSkill">Add a skill group</button>
+        `;
+
+        document.getElementById('experienceSection').innerHTML = `
+          ${resume.experience.map((experience, expIndex) => `
+            <div class="sub-card">
+              <div class="inline-grid">
+                <div class="field"><label>Company</label><input data-experience-index="${expIndex}" data-experience-field="company" value="${escapeHtml(experience.company)}" /></div>
+                <div class="field"><label>Designation</label><input data-experience-index="${expIndex}" data-experience-field="designation" value="${escapeHtml(experience.designation)}" /></div>
+              </div>
+              <div class="inline-grid">
+                <div class="field"><label>Start</label><input data-experience-index="${expIndex}" data-experience-field="startDate" value="${escapeHtml(experience.startDate)}" /></div>
+                <div class="field"><label>End</label><input data-experience-index="${expIndex}" data-experience-field="endDate" value="${escapeHtml(experience.endDate)}" /></div>
+              </div>
+              <div class="field" style="margin-top:8px;"><label>Projects</label></div>
+              ${experience.projects.map((project, projectIndex) => `
+                <div class="sub-card" style="margin-top:8px;">
+                  <div class="inline-grid">
+                    <div class="field"><label>Client</label><input data-experience-index="${expIndex}" data-project-index="${projectIndex}" data-project-field="client" value="${escapeHtml(project.client)}" /></div>
+                    <div class="field"><label>Project</label><input data-experience-index="${expIndex}" data-project-index="${projectIndex}" data-project-field="projectTitle" value="${escapeHtml(project.projectTitle)}" /></div>
+                  </div>
+                  <div class="field"><label>Dates</label><input data-experience-index="${expIndex}" data-project-index="${projectIndex}" data-project-field="dates" value="${escapeHtml(project.dates)}" /></div>
+                  <div class="field"><label>Bullets</label>
+                    ${project.bullets.map((bullet, bulletIndex) => `
+                      <div style="display:flex; gap:6px; margin-top:6px;">
+                        <input data-experience-index="${expIndex}" data-project-index="${projectIndex}" data-bullet-index="${bulletIndex}" data-bullet-field="text" value="${escapeHtml(bullet)}" />
+                        <button class="small-btn" data-remove-bullet="${expIndex}-${projectIndex}-${bulletIndex}">×</button>
+                      </div>
+                    `).join('')}
+                    <div style="margin-top:8px;"><button class="small-btn" data-add-bullet="${expIndex}-${projectIndex}">Add bullet</button></div>
+                  </div>
+                  <div style="margin-top:8px; display:flex; justify-content:space-between; gap:8px;"><button class="small-btn" data-remove-project="${expIndex}-${projectIndex}">Remove project</button></div>
+                </div>
+              `).join('')}
+              <div style="margin-top:8px;"><button class="small-btn" data-add-project="${expIndex}">Add project</button></div>
+              <div style="margin-top:8px;"><button class="small-btn" data-remove-experience="${expIndex}">Remove experience</button></div>
+            </div>
+          `).join('')}
+          <button class="small-btn" id="addExperience">Add experience entry</button>
+        `;
+
+        document.getElementById('educationSection').innerHTML = `
+          ${resume.education.map((entry, index) => `
+            <div class="sub-card">
+              <div class="inline-grid">
+                <div class="field"><label>Degree</label><input data-education-index="${index}" data-education-field="degree" value="${escapeHtml(entry.degree)}" /></div>
+                <div class="field"><label>Institution</label><input data-education-index="${index}" data-education-field="institution" value="${escapeHtml(entry.institution)}" /></div>
+              </div>
+              <div class="inline-grid">
+                <div class="field"><label>Dates</label><input data-education-index="${index}" data-education-field="dates" value="${escapeHtml(entry.dates)}" /></div>
+                <div class="field"><label>Score</label><input data-education-index="${index}" data-education-field="score" value="${escapeHtml(entry.score)}" /></div>
+              </div>
+              <div style="margin-top:8px;"><button class="small-btn" data-remove-education="${index}">Remove education</button></div>
+            </div>
+          `).join('')}
+          <button class="small-btn" id="addEducation" style="margin-top:8px;">Add education</button>
+        `;
+
+        document.getElementById('photoSection').innerHTML = `
+          <div class="field">
+            <label><input type="checkbox" id="showPhoto" ${resume.layout.showPhoto ? 'checked' : ''} /> Show profile photo</label>
+          </div>
+          <div class="field">
+            <label>Upload photo</label>
+            <input type="file" id="photoUpload" accept="image/*" />
+          </div>
+          <div class="inline-grid">
+            <div class="field"><label>Width (mm)</label><input type="number" id="photoWidth" value="${resume.layout.photoWidth}" /></div>
+            <div class="field"><label>Height (mm)</label><input type="number" id="photoHeight" value="${resume.layout.photoHeight}" /></div>
+          </div>
+          <div class="inline-grid">
+            <div class="field"><label>Zoom</label><input type="range" id="photoZoom" min="0.7" max="1.6" step="0.1" value="${resume.layout.photoZoom}" /></div>
+            <div class="field"><label>Border radius</label><input type="number" id="photoBorderRadius" value="${resume.layout.photoBorderRadius}" /></div>
+          </div>
+          <div class="inline-grid">
+            <div class="field"><label>Position X</label><input type="range" id="photoPositionX" min="0" max="100" step="1" value="${resume.layout.photoPositionX}" /></div>
+            <div class="field"><label>Position Y</label><input type="range" id="photoPositionY" min="0" max="100" step="1" value="${resume.layout.photoPositionY}" /></div>
+          </div>
+        `;
+
+        document.getElementById('layoutSection').innerHTML = `
+          <div class="inline-grid">
+            <div class="field"><label>Font size</label><input type="number" id="fontSize" value="${resume.layout.fontSize}" step="0.5" /></div>
+            <div class="field"><label>Line height</label><input type="number" id="lineHeight" value="${resume.layout.lineHeight}" step="0.05" /></div>
+          </div>
+          <div class="inline-grid">
+            <div class="field"><label>Section spacing</label><input type="number" id="sectionSpacing" value="${resume.layout.sectionSpacing}" /></div>
+            <div class="field"><label>Bullet spacing</label><input type="number" id="bulletSpacing" value="${resume.layout.bulletSpacing}" /></div>
+          </div>
+          <div class="inline-grid">
+            <div class="field"><label>Top margin</label><input type="number" id="marginTop" value="${resume.layout.marginTop}" /></div>
+            <div class="field"><label>Bottom margin</label><input type="number" id="marginBottom" value="${resume.layout.marginBottom}" /></div>
+          </div> 
+          <div class="inline-grid">
+            <div class="field"><label>Left margin</label><input type="number" id="marginLeft" value="${resume.layout.marginLeft}" /></div>
+            <div class="field"><label>Right margin</label><input type="number" id="marginRight" value="${resume.layout.marginRight}" /></div>
+          </div>
+        `;
+      }
+
+      function renderPreview() {
+        const layout = resume.layout;
+        const contactItems = [resume.personalInfo.email, resume.personalInfo.phone, resume.personalInfo.location].filter(Boolean);
+        const scale = parseFloat(zoomSelect.value || '1');
+
+        previewContainer.innerHTML = `
+          <div class="page" style="font-size:${layout.fontSize}px; line-height:${layout.lineHeight}; padding-top:${layout.marginTop}mm; padding-bottom:${layout.marginBottom}mm; padding-left:${layout.marginLeft}mm; padding-right:${layout.marginRight}mm; transform: scale(${scale}); transform-origin: top center;">
+            <div class="header-card">
+              <div class="header-top">
+                <div>
+                  <span class="profile-badge">Profile</span>
+                  <h1 class="name">${escapeHtml(resume.personalInfo.name)}</h1>
+                  <p class="title">${escapeHtml(resume.personalInfo.title)}</p>
+                  <div class="contact-row">
+                    ${contactItems.map(item => `<span class="contact-pill">${escapeHtml(item)}</span>`).join('')}
+                  </div>
+                </div>
+                ${layout.showPhoto && resume.personalInfo.photo ? `
+                  <div class="photo-box" style="width:${layout.photoWidth}mm; height:${layout.photoHeight}mm; border-radius:${layout.photoBorderRadius}px;">
+                    <img src="${resume.personalInfo.photo}" alt="Profile" style="transform:scale(${layout.photoZoom}); object-position:${layout.photoPositionX}% ${layout.photoPositionY}%;" />
+                  </div>
+                ` : `
+                  <div class="photo-box" style="width:${layout.photoWidth}mm; height:${layout.photoHeight}mm; border-radius:${layout.photoBorderRadius}px;">No photo</div>
+                `}
+              </div>
+            </div>
+
+            <div class="section-heading" style="margin-top:${layout.sectionSpacing}mm;"><div class="line"></div><div class="text">Professional Summary</div><div class="line"></div></div>
+            <div class="summary-box"><p>${escapeHtml(resume.summary.text)}</p></div>
+
+            <div class="section-heading" style="margin-top:${layout.sectionSpacing}mm;"><div class="line"></div><div class="text">Technical Skills</div><div class="line"></div></div>
+            <div class="summary-box">
+              ${resume.skills.map(group => `<div class="skill-line" style="margin-top:4px;"><strong>${escapeHtml(group.category)}:</strong> ${escapeHtml(group.skills)}</div>`).join('')}
+            </div>
+
+            <div class="section-heading" style="margin-top:${layout.sectionSpacing}mm;"><div class="line"></div><div class="text">Professional Experience</div><div class="line"></div></div>
+            <div>
+              ${resume.experience.map(exp => `
+                <div class="entry-box">
+                  <div class="entry-top">
+                    <div>
+                      <div class="entry-title">${escapeHtml(exp.designation)}</div>
+                      <div class="entry-meta">${escapeHtml(exp.company)}</div>
+                    </div>
+                    <div class="entry-meta">${escapeHtml(exp.startDate)} – ${escapeHtml(exp.endDate)}</div>
+                  </div>
+                  ${exp.projects.map(project => `
+                    <div class="project-box">
+                      <div class="project-head">
+                        <div>
+                          <div class="project-title">${escapeHtml(project.client)}</div>
+                          <div class="entry-meta">${escapeHtml(project.projectTitle)}</div>
+                        </div>
+                        <div class="entry-meta">${escapeHtml(project.dates)}</div>
+                      </div>
+                      <ul>
+                        ${project.bullets.map(bullet => `<li style="margin-top:${layout.bulletSpacing}mm;">${escapeHtml(bullet)}</li>`).join('')}
+                      </ul>
+                    </div>
+                  `).join('')}
+                </div>
+              `).join('')}
+            </div>
+
+            <div class="section-heading" style="margin-top:${layout.sectionSpacing}mm;"><div class="line"></div><div class="text">Education</div><div class="line"></div></div>
+            <div>
+              ${resume.education.map(entry => `
+                <div class="education-box education-row">
+                  <div>
+                    <div class="entry-title">${escapeHtml(entry.degree)}</div>
+                    <div class="entry-meta">${escapeHtml(entry.institution)}</div>
+                  </div>
+                  <div class="entry-meta" style="text-align:right;">
+                    <div>${escapeHtml(entry.dates)}</div>
+                    <div>${escapeHtml(entry.score)}</div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+        if (document.body.classList.contains('full-pdf-view')) {
+          requestAnimationFrame(fitFullPdfView);
+        }
+      }
+
+      function escapeHtml(value) {
+        return String(value ?? '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      document.addEventListener('input', (event) => {
+        const target = event.target;
+
+        if (target.matches('[data-field]')) {
+          const field = target.getAttribute('data-field');
+          resume.personalInfo[field] = target.value;
+          renderPreview();
+          return;
+        }
+
+        if (target.matches('[data-summary]')) {
+          resume.summary.text = target.value;
+          renderPreview();
+          return;
+        }
+
+        if (target.matches('[data-skill-field]')) {
+          const index = Number(target.getAttribute('data-skill-index'));
+          const field = target.getAttribute('data-skill-field');
+          resume.skills[index][field] = target.value;
+          renderPreview();
+          return;
+        }
+
+        if (target.matches('[data-experience-field]')) {
+          const index = Number(target.getAttribute('data-experience-index'));
+          const field = target.getAttribute('data-experience-field');
+          resume.experience[index][field] = target.value;
+          renderPreview();
+          return;
+        }
+
+        if (target.matches('[data-project-field]')) {
+          const expIndex = Number(target.getAttribute('data-experience-index'));
+          const projectIndex = Number(target.getAttribute('data-project-index'));
+          const field = target.getAttribute('data-project-field');
+          resume.experience[expIndex].projects[projectIndex][field] = target.value;
+          renderPreview();
+          return;
+        }
+
+        if (target.matches('[data-bullet-field]')) {
+          const expIndex = Number(target.getAttribute('data-experience-index'));
+          const projectIndex = Number(target.getAttribute('data-project-index'));
+          const bulletIndex = Number(target.getAttribute('data-bullet-index'));
+          resume.experience[expIndex].projects[projectIndex].bullets[bulletIndex] = target.value;
+          renderPreview();
+          return;
+        }
+
+        if (target.matches('[data-education-field]')) {
+          const index = Number(target.getAttribute('data-education-index'));
+          const field = target.getAttribute('data-education-field');
+          resume.education[index][field] = target.value;
+          renderPreview();
+          return;
+        }
+      });
+
+      document.addEventListener('change', (event) => {
+        const target = event.target;
+        if (target.id === 'showPhoto') {
+          resume.layout.showPhoto = target.checked;
+          renderPreview();
+          return;
+        }
+
+        if (target.id === 'photoUpload') {
+          const file = target.files?.[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = () => {
+            resume.personalInfo.photo = typeof reader.result === 'string' ? reader.result : '';
+            renderPreview();
+          };
+          reader.readAsDataURL(file);
+          return;
+        }
+
+        if (target.id === 'photoWidth') {
+          resume.layout.photoWidth = Number(target.value);
+          renderPreview();
+          return;
+        }
+        if (target.id === 'photoHeight') {
+          resume.layout.photoHeight = Number(target.value);
+          renderPreview();
+          return;
+        }
+        if (target.id === 'photoZoom') {
+          resume.layout.photoZoom = Number(target.value);
+          renderPreview();
+          return;
+        }
+        if (target.id === 'photoBorderRadius') {
+          resume.layout.photoBorderRadius = Number(target.value);
+          renderPreview();
+          return;
+        }
+        if (target.id === 'photoPositionX') {
+          resume.layout.photoPositionX = Number(target.value);
+          renderPreview();
+          return;
+        }
+        if (target.id === 'photoPositionY') {
+          resume.layout.photoPositionY = Number(target.value);
+          renderPreview();
+          return;
+        }
+
+        if (target.id === 'fontSize') {
+          resume.layout.fontSize = Number(target.value);
+          renderPreview();
+          return;
+        }
+        if (target.id === 'lineHeight') {
+          resume.layout.lineHeight = Number(target.value);
+          renderPreview();
+          return;
+        }
+        if (target.id === 'sectionSpacing') {
+          resume.layout.sectionSpacing = Number(target.value);
+          renderPreview();
+          return;
+        }
+        if (target.id === 'bulletSpacing') {
+          resume.layout.bulletSpacing = Number(target.value);
+          renderPreview();
+          return;
+        }
+        if (target.id === 'marginTop') {
+          resume.layout.marginTop = Number(target.value);
+          renderPreview();
+          return;
+        }
+        if (target.id === 'marginBottom') {
+          resume.layout.marginBottom = Number(target.value);
+          renderPreview();
+          return;
+        }
+        if (target.id === 'marginLeft') {
+          resume.layout.marginLeft = Number(target.value);
+          renderPreview();
+          return;
+        }
+        if (target.id === 'marginRight') {
+          resume.layout.marginRight = Number(target.value);
+          renderPreview();
+          return;
+        }
+      });
+
+      document.addEventListener('click', (event) => {
+        const target = event.target;
+        if (target.id === 'addSkill') {
+          event.preventDefault();
+          resume.skills.push({ category: 'New Category', skills: 'Add your skills here' });
+          render();
+          return;
+        }
+        if (target.getAttribute('data-remove-skill') !== null) {
+          event.preventDefault();
+          const index = Number(target.getAttribute('data-remove-skill'));
+          resume.skills.splice(index, 1);
+          render();
+          return;
+        }
+        if (target.id === 'addExperience') {
+          event.preventDefault();
+          resume.experience.push({ company: 'New Company', designation: 'New Role', startDate: 'Start', endDate: 'End', projects: [{ client: 'Client', projectTitle: 'Project', dates: 'Dates', bullets: ['Add a bullet'] }] });
+          render();
+          return;
+        }
+        if (target.getAttribute('data-remove-experience') !== null) {
+          event.preventDefault();
+          const index = Number(target.getAttribute('data-remove-experience'));
+          resume.experience.splice(index, 1);
+          render();
+          return;
+        }
+        if (target.getAttribute('data-add-project') !== null) {
+          event.preventDefault();
+          const index = Number(target.getAttribute('data-add-project'));
+          resume.experience[index].projects.push({ client: 'Client', projectTitle: 'Project', dates: 'Dates', bullets: ['Add a bullet'] });
+          render();
+          return;
+        }
+        if (target.getAttribute('data-remove-project') !== null) {
+          event.preventDefault();
+          const value = target.getAttribute('data-remove-project');
+          const [expIndex, projectIndex] = value.split('-').map(Number);
+          resume.experience[expIndex].projects.splice(projectIndex, 1);
+          render();
+          return;
+        }
+        if (target.getAttribute('data-add-bullet') !== null) {
+          event.preventDefault();
+          const value = target.getAttribute('data-add-bullet');
+          const [expIndex, projectIndex] = value.split('-').map(Number);
+          resume.experience[expIndex].projects[projectIndex].bullets.push('Add a bullet');
+          render();
+          return;
+        }
+        if (target.getAttribute('data-remove-bullet') !== null) {
+          event.preventDefault();
+          const value = target.getAttribute('data-remove-bullet');
+          const [expIndex, projectIndex, bulletIndex] = value.split('-').map(Number);
+          resume.experience[expIndex].projects[projectIndex].bullets.splice(bulletIndex, 1);
+          render();
+          return;
+        }
+        if (target.id === 'addEducation') {
+          event.preventDefault();
+          resume.education.push({ degree: 'New Degree', institution: 'Institution', dates: 'Dates', score: 'Score' });
+          render();
+          return;
+        }
+        if (target.getAttribute('data-remove-education') !== null) {
+          event.preventDefault();
+          const index = Number(target.getAttribute('data-remove-education'));
+          resume.education.splice(index, 1);
+          render();
+          return;
+        }
+      });
+
+      document.getElementById('toggleEditor').addEventListener('click', () => {
+        editorPanel.classList.toggle('collapsed');
+      });
+
+      function fitFullPdfView() {
+        if (!document.body.classList.contains('full-pdf-view')) return;
+        const page = previewContainer.querySelector('.page');
+        if (!page) return;
+
+        // Fit the full A4 width comfortably in the viewport without changing PDF dimensions.
+        const availableWidth = Math.max(320, window.innerWidth - 48);
+        const naturalWidth = page.getBoundingClientRect().width / (parseFloat(page.dataset.fullScale || '1'));
+        const scale = Math.min(1, availableWidth / naturalWidth);
+        page.dataset.fullScale = String(scale);
+        page.style.transform = `scale(${scale})`;
+        page.style.transformOrigin = 'top center';
+
+        // Compensate for transform not affecting layout height.
+        previewContainer.style.height = `${page.offsetHeight * scale}px`;
+      }
+
+      function enterFullPdfView() {
+        editorPanel.classList.add('collapsed');
+        document.body.classList.add('full-pdf-view');
+        document.getElementById('viewPreview').classList.add('active');
+        document.getElementById('viewSplit').classList.remove('active');
+        zoomSelect.value = '1';
+        renderPreview();
+        requestAnimationFrame(fitFullPdfView);
+        window.scrollTo({top:0, behavior:'smooth'});
+      }
+
+      function exitFullPdfView() {
+        document.body.classList.remove('full-pdf-view');
+        editorPanel.classList.remove('collapsed');
+        previewContainer.style.height = '';
+        document.getElementById('viewSplit').classList.add('active');
+        document.getElementById('viewPreview').classList.remove('active');
+        zoomSelect.value = '1';
+        renderPreview();
+        window.scrollTo({top:0, behavior:'smooth'});
+      }
+
+      document.getElementById('viewSplit').addEventListener('click', exitFullPdfView);
+      document.getElementById('viewPreview').addEventListener('click', enterFullPdfView);
+      document.getElementById('exitFullView').addEventListener('click', exitFullPdfView);
+      window.addEventListener('resize', fitFullPdfView);
+
+      document.getElementById('printPdf').addEventListener('click', () => window.print());
+      zoomSelect.addEventListener('change', renderPreview);
+
+      render();
+    </script>
+  </body>
+</html>
