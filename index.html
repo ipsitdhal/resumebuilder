@@ -607,10 +607,181 @@
         }
       }
 
+      /* Refined application UI; resume document styles stay print-focused. */
+      :root {
+        --navy: #172b4d;
+        --charcoal: #334155;
+        --accent: #4263eb;
+        --accent-dark: #3451d1;
+        --light-gray: #f6f8fc;
+        --border: #e1e7f0;
+        --text: #1e293b;
+        --text-muted: #64748b;
+        --body-bg: #f2f5fa;
+        --radius: 10px;
+        --radius-lg: 14px;
+        --shadow: 0 8px 24px rgba(27, 45, 78, 0.06);
+      }
+      body {
+        background: radial-gradient(ellipse at 8% 0%, rgba(66, 99, 235, 0.08), transparent 34rem), var(--body-bg);
+      }
+      .app-shell { max-width: 1920px; margin: 0 auto; padding: 22px; }
+      .toolbar {
+        top: 12px;
+        padding: 17px 20px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: linear-gradient(115deg, #172b4d 0%, #203d69 100%);
+        box-shadow: 0 12px 30px rgba(23, 43, 77, 0.18);
+      }
+      .toolbar h1 { letter-spacing: -0.025em; }
+      .toolbar-actions { gap: 9px; }
+      .btn { min-height: 38px; padding: 9px 14px; font-weight: 650; box-shadow: none; }
+      .btn.secondary { border: 1px solid rgba(255, 255, 255, 0.2); }
+      .btn.danger { background: rgba(255, 255, 255, 0.1); color: #ffe4e6; }
+      .btn.danger:hover { background: rgba(244, 63, 94, 0.25); }
+      .layout { gap: 20px; }
+      .editor-panel { top: 104px; max-height: calc(100vh - 126px); }
+      .editor-scroll { gap: 12px; }
+      .editor-card {
+        border-color: #e3e9f2;
+        border-radius: 13px;
+        box-shadow: 0 3px 12px rgba(27, 45, 78, 0.04);
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      }
+      .editor-card:focus-within { border-color: #c4d0f8; box-shadow: 0 5px 18px rgba(66, 99, 235, 0.09); }
+      .editor-card-header {
+        min-height: 48px;
+        padding: 13px 15px;
+        text-align: left;
+        background: #fbfcfe;
+        transition: background 0.2s ease;
+      }
+      .editor-card-header:hover { background: #f3f6fc; }
+      .editor-card-header .icon { margin-right: 8px; }
+      .editor-card-body { padding: 15px; }
+      .field label { font-size: 0.82rem; }
+      .field input, .field textarea {
+        min-height: 40px;
+        border-color: #dce3ed;
+        border-radius: 9px;
+      }
+      .field textarea { min-height: 92px; }
+      .field input:hover, .field textarea:hover { border-color: #bdc9da; }
+      .btn-small, .shape-btn { min-height: 34px; transition: all 0.18s ease; }
+      .btn-small.primary { background: #f4f6ff; }
+      .sub-card { padding: 12px; border-color: #e4e9f1; background: #fafbfe; }
+      .photo-dropzone { padding: 15px; border-color: #cfd8e7; background: #fafbfe; }
+      .preview-panel {
+        padding: 16px;
+        border-color: #e3e9f2;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.68);
+      }
+      .preview-toolbar { margin-bottom: 13px; padding: 3px 2px 8px; }
+      .preview-toolbar strong { font-size: 0.96rem; }
+      .preview-toolbar .help-text { margin-top: 4px; }
+      :where(button, input, textarea):focus-visible {
+        outline: 3px solid rgba(66, 99, 235, 0.36);
+        outline-offset: 2px;
+      }
+      .editor-card-header:focus-visible { position: relative; z-index: 1; }
+      @media (max-width: 1200px) {
+        .app-shell { max-width: 980px; }
+        .editor-panel { position: static; max-height: none; }
+      }
+      @media (max-width: 700px) {
+        .app-shell { padding: 10px; }
+        .toolbar { top: 6px; padding: 11px; }
+        .preview-panel { padding: 8px; }
+        .editor-card-body { padding: 13px; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+          scroll-behavior: auto !important;
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+
+      .import-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        display: grid;
+        place-items: center;
+        padding: 20px;
+        background: rgba(15, 23, 42, 0.56);
+        backdrop-filter: blur(5px);
+      }
+      .import-modal.hidden { display: none !important; }
+      .import-dialog {
+        width: min(100%, 900px);
+        max-height: min(90vh, 900px);
+        overflow: auto;
+        border: 1px solid #e1e7f0;
+        border-radius: 18px;
+        background: #fff;
+        box-shadow: 0 28px 80px rgba(15, 23, 42, 0.28);
+      }
+      .import-header, .import-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        padding: 18px 22px;
+      }
+      .import-header { border-bottom: 1px solid var(--border); }
+      .import-header h2 { margin: 0; font-size: 1.12rem; color: var(--navy); }
+      .import-header p { margin: 5px 0 0; color: var(--text-muted); font-size: 0.88rem; }
+      .import-content { padding: 20px 22px; }
+      .import-source { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; }
+      .import-source input, .import-content textarea, .import-content input {
+        width: 100%;
+        min-height: 42px;
+        border: 1px solid #dce3ed;
+        border-radius: 9px;
+        padding: 10px 12px;
+        color: var(--text);
+        background: #fff;
+      }
+      .import-content textarea { min-height: 92px; resize: vertical; }
+      .import-note { margin: 10px 0 0; color: var(--text-muted); font-size: 0.82rem; line-height: 1.5; }
+      .import-profile-link { display: inline-block; margin-top: 7px; color: var(--accent); font-size: 0.84rem; font-weight: 650; text-decoration: none; }
+      .import-profile-link:hover { text-decoration: underline; }
+      .import-status { min-height: 1.35em; margin: 12px 0; color: #475569; font-size: 0.88rem; }
+      .import-status.error { color: #b42318; }
+      .import-paste { margin-top: 18px; padding-top: 17px; border-top: 1px solid var(--border); }
+      .import-paste label { display: block; margin-bottom: 7px; font-weight: 700; font-size: 0.86rem; color: var(--charcoal); }
+      .import-paste-actions { display: flex; justify-content: flex-end; margin-top: 8px; }
+      .import-draft { display: grid; grid-template-columns: minmax(0, 1fr) minmax(240px, 0.8fr); gap: 18px; margin-top: 20px; }
+      .import-fields { display: grid; gap: 11px; }
+      .import-field { display: grid; gap: 5px; }
+      .import-field label { font-size: 0.8rem; font-weight: 700; color: var(--charcoal); }
+      .import-preview { align-self: start; padding: 16px; border: 1px solid var(--border); border-radius: 12px; background: #f8faff; }
+      .import-preview h3 { margin: 0 0 12px; color: var(--navy); font-size: 0.9rem; }
+      .import-preview strong { display: block; color: var(--text); font-size: 1.02rem; }
+      .import-preview .draft-title { margin: 4px 0 10px; color: var(--accent); font-size: 0.83rem; }
+      .import-preview .draft-meta { color: var(--text-muted); font-size: 0.78rem; line-height: 1.5; overflow-wrap: anywhere; }
+      .import-preview .draft-summary { margin: 12px 0 0; color: var(--charcoal); font-size: 0.81rem; line-height: 1.5; white-space: pre-line; }
+      .import-footer { border-top: 1px solid var(--border); flex-wrap: wrap; }
+      .import-footer .footer-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+      @media (max-width: 650px) {
+        .import-modal { padding: 8px; }
+        .import-dialog { max-height: 94vh; border-radius: 14px; }
+        .import-header, .import-footer { padding: 14px; }
+        .import-content { padding: 15px; }
+        .import-source { grid-template-columns: 1fr; }
+        .import-draft { grid-template-columns: 1fr; }
+        .import-footer { align-items: stretch; }
+        .import-footer .footer-actions { width: 100%; }
+        .import-footer .footer-actions button { flex: 1; }
+      }
+
       @media print {
         body { background: var(--white); }
         .app-shell { padding: 0; }
-        .toolbar, .editor-panel, .preview-toolbar, .toast-stack { display: none !important; }
+        .toolbar, .editor-panel, .preview-toolbar, .toast-stack, .import-modal { display: none !important; }
         .preview-panel { border: 0; box-shadow: none; padding: 0; background: var(--white); }
         .resume-page {
           max-width: none;
@@ -626,6 +797,25 @@
   </head>
   <body>
     <div class="toast-stack" id="toastStack"></div>
+    <div class="import-modal hidden" id="linkedinImportModal" role="dialog" aria-modal="true" aria-labelledby="linkedinImportTitle" aria-hidden="true">
+      <div class="import-dialog">
+        <div class="import-header">
+          <div>
+            <h2 id="linkedinImportTitle">Import from LinkedIn</h2>
+            <p>Review and edit the details before they are added to your resume.</p>
+          </div>
+          <button type="button" class="btn-small" data-import-action="close" aria-label="Close import preview">Close</button>
+        </div>
+        <div class="import-content" id="linkedinImportContent"></div>
+        <div class="import-footer">
+          <span class="help-text">Your existing resume is unchanged until you apply this import.</span>
+          <div class="footer-actions">
+            <button type="button" class="btn-small" data-import-action="manual">Continue manually</button>
+            <button type="button" class="btn primary" data-import-action="apply" id="applyLinkedInImport" disabled>Apply to resume</button>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="app-shell">
       <header class="toolbar">
         <div>
@@ -724,6 +914,13 @@
       const printBtn = document.getElementById("printBtn");
       const resetBtn = document.getElementById("resetBtn");
       const toastStack = document.getElementById("toastStack");
+      const linkedinImportModal = document.getElementById("linkedinImportModal");
+      const linkedinImportContent = document.getElementById("linkedinImportContent");
+      let linkedinDraft = null;
+      let linkedinImportUrl = "";
+      let linkedinPasteText = "";
+      let linkedinImportStatus = "";
+      let linkedinImportStatusError = false;
 
       function loadResumeData() {
         try {
@@ -778,6 +975,14 @@
         downloadPdfBtn.addEventListener("click", downloadPdf);
         printBtn.addEventListener("click", () => window.print());
         resetBtn.addEventListener("click", resetResume);
+        linkedinImportModal.addEventListener("click", handleLinkedInImportClick);
+        linkedinImportContent.addEventListener("input", handleLinkedInDraftInput);
+        linkedinImportModal.addEventListener("click", event => {
+          if (event.target === linkedinImportModal) closeLinkedInImport();
+        });
+        document.addEventListener("keydown", event => {
+          if (event.key === "Escape" && !linkedinImportModal.classList.contains("hidden")) closeLinkedInImport();
+        });
       }
 
       function syncEditorState() {
@@ -785,6 +990,7 @@
         editorPanel.classList.toggle("collapsed", collapsed);
         layout.classList.toggle("editor-collapsed", collapsed);
         toggleEditorBtn.textContent = collapsed ? "Show Editor" : "Hide Editor";
+        toggleEditorBtn.setAttribute("aria-expanded", String(!collapsed));
         document.body.classList.toggle("editor-is-collapsed", collapsed);
       }
 
@@ -805,6 +1011,252 @@
         showToast("Resume reset to default data.");
       }
 
+      function openLinkedInImport() {
+        linkedinDraft = null;
+        linkedinImportUrl = resumeData.personalInfo.linkedIn || "";
+        linkedinPasteText = "";
+        linkedinImportStatus = "LinkedIn often blocks direct browser access with CORS or rate limits. If that happens, open the profile in a new tab, copy its visible details, and paste them below.";
+        linkedinImportStatusError = false;
+        renderLinkedInImport();
+        linkedinImportModal.classList.remove("hidden");
+        linkedinImportModal.setAttribute("aria-hidden", "false");
+        requestAnimationFrame(() => document.getElementById("linkedinProfileUrl")?.focus());
+      }
+
+      function closeLinkedInImport() {
+        linkedinImportModal.classList.add("hidden");
+        linkedinImportModal.setAttribute("aria-hidden", "true");
+        linkedinDraft = null;
+      }
+
+      function renderLinkedInImport() {
+        let safeProfileUrl = "";
+        try { safeProfileUrl = normalizeLinkedInUrl(linkedinImportUrl); } catch { /* The link stays hidden until the URL is valid. */ }
+        const field = (key, label, multiline = false) => `
+          <div class="import-field">
+            <label for="linkedinDraft-${key}">${label}</label>
+            ${multiline
+              ? `<textarea id="linkedinDraft-${key}" data-import-field="${key}" rows="${key === "summary" ? 5 : 3}">${escapeHtml(linkedinDraft?.[key] || "")}</textarea>`
+              : `<input id="linkedinDraft-${key}" data-import-field="${key}" value="${escapeHtml(linkedinDraft?.[key] || "")}" />`}
+          </div>`;
+        linkedinImportContent.innerHTML = `
+          <div class="import-source">
+            <input id="linkedinProfileUrl" type="url" placeholder="https://www.linkedin.com/in/your-profile/" value="${escapeHtml(linkedinImportUrl)}" aria-label="LinkedIn profile URL" />
+            <button type="button" class="btn primary" data-import-action="fetch">Fetch public details</button>
+          </div>
+          <p class="import-note">Only profile details that LinkedIn exposes publicly can be imported. The page may block browser access; if so, paste the visible profile text below. Imported fields remain a draft until you choose Apply.</p>
+          ${safeProfileUrl ? `<a class="import-profile-link" href="${escapeHtml(safeProfileUrl)}" target="_blank" rel="noopener noreferrer">Open public profile in a new tab</a>` : ""}
+          <div class="import-status ${linkedinImportStatusError ? "error" : ""}" role="status">${escapeHtml(linkedinImportStatus)}</div>
+          <div class="import-paste">
+            <label for="linkedinPasteText">Paste public profile text (fallback)</label>
+            <textarea id="linkedinPasteText" placeholder="Paste copied profile text here, then review the detected details.">${escapeHtml(linkedinPasteText)}</textarea>
+            <div class="import-paste-actions"><button type="button" class="btn-small primary" data-import-action="parse-paste">Review pasted text</button></div>
+          </div>
+          ${linkedinDraft ? `
+            <div class="import-draft">
+              <div class="import-fields">
+                ${field("name", "Name")}
+                ${field("title", "Headline / title")}
+                ${field("location", "Location")}
+                ${field("email", "Email")}
+                ${field("phone", "Phone")}
+                ${field("summary", "Professional summary", true)}
+                ${field("skills", "Skills (one category per line)", true)}
+                ${field("experience", "Experience (one role per line)", true)}
+                ${field("education", "Education (one item per line)", true)}
+                ${field("certifications", "Certifications (one item per line)", true)}
+              </div>
+              <aside class="import-preview" aria-live="polite">
+                <h3>Resume preview</h3>
+                <strong>${escapeHtml(linkedinDraft.name || "Your Name")}</strong>
+                <div class="draft-title">${escapeHtml(linkedinDraft.title || "Your title")}</div>
+                <div class="draft-meta">${escapeHtml([linkedinDraft.location, linkedinDraft.email, linkedinDraft.phone, linkedinDraft.linkedIn].filter(Boolean).join(" · ") || "Contact details")}</div>
+                <p class="draft-summary">${escapeHtml(linkedinDraft.summary || "Your professional summary")}</p>
+                ${linkedinDraft.skills ? `<p class="draft-meta"><strong>Skills:</strong> ${escapeHtml(linkedinDraft.skills)}</p>` : ""}
+                ${linkedinDraft.experience ? `<p class="draft-meta"><strong>Experience:</strong> ${escapeHtml(linkedinDraft.experience)}</p>` : ""}
+                ${linkedinDraft.education ? `<p class="draft-meta"><strong>Education:</strong> ${escapeHtml(linkedinDraft.education)}</p>` : ""}
+              </aside>
+            </div>` : ""}
+        `;
+        const applyButton = document.getElementById("applyLinkedInImport");
+        const hasDraftData = linkedinDraft && [linkedinDraft.name, linkedinDraft.title, linkedinDraft.location, linkedinDraft.email, linkedinDraft.phone, linkedinDraft.summary, linkedinDraft.skills, linkedinDraft.experience, linkedinDraft.education, linkedinDraft.certifications].some(value => String(value || "").trim());
+        applyButton.disabled = !hasDraftData;
+      }
+
+      function handleLinkedInImportClick(event) {
+        const button = event.target.closest("[data-import-action]");
+        if (!button) return;
+        const action = button.dataset.importAction;
+        if (action === "close" || action === "manual") {
+          closeLinkedInImport();
+          return;
+        }
+        if (action === "apply") {
+          applyLinkedInDraft();
+          return;
+        }
+        if (action === "fetch") fetchLinkedInProfile();
+        if (action === "parse-paste") parseLinkedInPaste();
+      }
+
+      function handleLinkedInDraftInput(event) {
+        if (event.target.id === "linkedinProfileUrl") linkedinImportUrl = event.target.value;
+        if (event.target.id === "linkedinPasteText") linkedinPasteText = event.target.value;
+        const key = event.target.dataset.importField;
+        if (!key || !linkedinDraft) return;
+        linkedinDraft[key] = event.target.value;
+        const activeId = event.target.id;
+        const selectionStart = event.target.selectionStart;
+        const selectionEnd = event.target.selectionEnd;
+        renderLinkedInImport();
+        const updated = document.getElementById(activeId);
+        if (updated) {
+          updated.focus();
+          if (typeof selectionStart === "number") updated.setSelectionRange(selectionStart, selectionEnd);
+        }
+      }
+
+      function normalizeLinkedInUrl(rawUrl) {
+        let url;
+        try { url = new URL(rawUrl.trim()); } catch { throw new Error("Enter a full LinkedIn profile URL."); }
+        if (!/^https?:$/.test(url.protocol) || !["linkedin.com", "www.linkedin.com"].includes(url.hostname.toLowerCase()) || !/^\/in\/[^/]+\/?$/i.test(url.pathname)) {
+          throw new Error("Use a public profile URL in the format linkedin.com/in/username.");
+        }
+        return `https://www.linkedin.com${url.pathname.replace(/\/$/, "")}/`;
+      }
+
+      async function fetchLinkedInProfile() {
+        const urlInput = document.getElementById("linkedinProfileUrl");
+        linkedinImportUrl = urlInput.value;
+        let profileUrl;
+        try { profileUrl = normalizeLinkedInUrl(linkedinImportUrl); }
+        catch (error) {
+          linkedinImportStatus = error.message;
+          linkedinImportStatusError = true;
+          renderLinkedInImport();
+          return;
+        }
+        linkedinImportUrl = profileUrl;
+        linkedinImportStatus = "Fetching publicly available profile data…";
+        linkedinImportStatusError = false;
+        renderLinkedInImport();
+        try {
+          const response = await fetch(profileUrl, { credentials: "omit", headers: { Accept: "text/html" } });
+          if (!response.ok) throw new Error(`LinkedIn returned ${response.status}.`);
+          const html = await response.text();
+          const draft = extractLinkedInDetails(html, profileUrl);
+          if (![draft.name, draft.title, draft.location, draft.summary, draft.skills, draft.experience, draft.education].some(Boolean)) {
+            throw new Error("The profile page did not expose readable public profile details.");
+          }
+          linkedinDraft = draft;
+          linkedinImportStatus = "Review the detected public details below. Edit anything that needs correction, then apply when ready.";
+          linkedinImportStatusError = false;
+          renderLinkedInImport();
+        } catch (error) {
+          const message = String(error.message || "");
+          if (/429/.test(message)) {
+            linkedinImportStatus = "LinkedIn returned HTTP 429 and is rate-limiting automated access. This standalone page cannot read the blocked response. Open the profile in a new tab and paste its visible details below.";
+          } else if (/failed to fetch|networkerror|load failed/i.test(message) || error instanceof TypeError) {
+            linkedinImportStatus = "LinkedIn blocked this browser request (CORS or rate limiting, including HTTP 429). This standalone page cannot read the response. Open the profile in a new tab and paste its visible details below.";
+          } else {
+            linkedinImportStatus = `LinkedIn could not provide public profile details (${message || "access blocked"}). Open the profile in a new tab and use the paste-and-review option below.`;
+          }
+          linkedinImportStatusError = true;
+          renderLinkedInImport();
+        }
+      }
+
+      function extractLinkedInDetails(html, profileUrl) {
+        const documentFromProfile = new DOMParser().parseFromString(html, "text/html");
+        const meta = selector => documentFromProfile.querySelector(selector)?.content?.trim() || "";
+        const people = [];
+        const visit = value => {
+          if (Array.isArray(value)) return value.forEach(visit);
+          if (!value || typeof value !== "object") return;
+          const types = Array.isArray(value["@type"]) ? value["@type"] : [value["@type"]];
+          if (types.some(type => String(type).toLowerCase() === "person")) people.push(value);
+          Object.values(value).forEach(visit);
+        };
+        documentFromProfile.querySelectorAll('script[type="application/ld+json"]').forEach(script => {
+          try { visit(JSON.parse(script.textContent)); } catch { /* Ignore malformed structured metadata. */ }
+        });
+        const person = people[0] || {};
+        const readText = value => {
+          if (typeof value === "string") return value.trim();
+          if (Array.isArray(value)) return value.map(readText).filter(Boolean).join(", ");
+          if (value && typeof value === "object") return value.name || value.addressLocality || "";
+          return "";
+        };
+        const ogTitle = meta('meta[property="og:title"]') || documentFromProfile.title || "";
+        const titleParts = ogTitle.replace(/\s*[|–-]\s*LinkedIn\s*$/i, "").split(/\s+[|–-]\s+/).filter(Boolean);
+        const name = readText(person.name) || titleParts[0] || "";
+        const headline = readText(person.jobTitle) || readText(person.headline) || titleParts.slice(1).join(" · ") || "";
+        const address = person.address || {};
+        const location = [address.addressLocality, address.addressRegion, address.addressCountry].map(readText).filter(Boolean).join(", ") || readText(person.homeLocation) || "";
+        const description = readText(person.description) || meta('meta[property="og:description"]') || meta('meta[name="description"]');
+        const summary = description.replace(/^(view .+? on linkedin[^.]*\.\s*)/i, "").trim();
+        const items = value => (Array.isArray(value) ? value : value ? [value] : []).map(item => item && typeof item === "object" ? item : { name: item });
+        const experience = items(person.worksFor).map(job => [readText(job.jobTitle || job.roleName), readText(job.name || job.worksFor?.name), readText(job.description)].filter(Boolean).join(" — ")).filter(Boolean).join("\n");
+        const education = items(person.alumniOf).map(school => readText(school.name || school)).filter(Boolean).join("\n");
+        const skills = readText(person.knowsAbout || person.skills).split(/,\s*/).filter(Boolean).join("\n");
+        return { name, title: headline, location, email: readText(person.email), phone: readText(person.telephone), linkedIn: profileUrl, summary, skills, experience, education, certifications: "" };
+      }
+
+      function parseLinkedInPaste() {
+        linkedinPasteText = document.getElementById("linkedinPasteText").value;
+        const text = linkedinPasteText.trim();
+        if (!text) {
+          linkedinImportStatus = "Paste some visible profile text first.";
+          linkedinImportStatusError = true;
+          renderLinkedInImport();
+          return;
+        }
+        const lines = text.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+        const email = text.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i)?.[0] || "";
+        const phone = text.match(/(?:\+?\d[\d\s().-]{7,}\d)/)?.[0] || "";
+        const profileUrl = text.match(/https?:\/\/(?:www\.)?linkedin\.com\/in\/[^\s)]+/i)?.[0] || linkedinImportUrl;
+        const cleaned = lines.filter(line => !line.includes(email) && !line.includes(phone) && !/linkedin\.com\/in\//i.test(line));
+        const name = cleaned[0] || "";
+        const title = cleaned[1] || "";
+        const location = cleaned[2] || "";
+        linkedinDraft = {
+          name, title, location, email, phone, linkedIn: profileUrl,
+          summary: cleaned.slice(3).join("\n"), skills: "", experience: "", education: "", certifications: ""
+        };
+        linkedinImportStatus = "Pasted text has been staged as a draft. Check the fields and preview; nothing has been saved yet.";
+        linkedinImportStatusError = false;
+        renderLinkedInImport();
+      }
+
+      function applyLinkedInDraft() {
+        if (!linkedinDraft) return;
+        const draft = linkedinDraft;
+        ["name", "title", "location", "email", "phone", "linkedIn"].forEach(key => {
+          if (String(draft[key] || "").trim()) resumeData.personalInfo[key] = draft[key].trim();
+        });
+        if (String(draft.summary || "").trim()) resumeData.summary.text = draft.summary.trim();
+        if (String(draft.skills || "").trim()) {
+          const parsedSkills = draft.skills.split(/\r?\n/).map(line => line.trim()).filter(Boolean).map(line => {
+            const separator = line.indexOf(":");
+            return separator > 0 ? { category: line.slice(0, separator).trim(), items: line.slice(separator + 1).trim() } : { category: "Skills", items: line };
+          });
+          if (parsedSkills.length) resumeData.skills = parsedSkills;
+        }
+        if (String(draft.experience || "").trim()) {
+          resumeData.experience = draft.experience.split(/\r?\n/).map(line => line.trim()).filter(Boolean).map(line => {
+            const [role, ...rest] = line.split(/\s+[—–-]\s+/);
+            return { role: role.trim(), company: rest.shift() || "", bullets: rest.join(" — ") };
+          });
+        }
+        if (String(draft.education || "").trim()) resumeData.education = draft.education.trim();
+        if (String(draft.certifications || "").trim()) resumeData.certifications = draft.certifications.trim();
+        saveResumeData();
+        renderEditor();
+        renderPreview();
+        closeLinkedInImport();
+        showToast("Reviewed LinkedIn details added to your resume.");
+      }
+
       function handleEditorClick(event) {
         const toggleButton = event.target.closest(".editor-card-header");
         if (toggleButton) {
@@ -812,6 +1264,12 @@
           resumeData.ui.collapsedSections[key] = !resumeData.ui.collapsedSections[key];
           saveResumeData();
           renderEditor();
+          return;
+        }
+
+        const importButton = event.target.closest("button[data-action='import-linkedin']");
+        if (importButton) {
+          openLinkedInImport();
           return;
         }
 
@@ -950,11 +1408,11 @@
         const collapsed = resumeData.ui.collapsedSections[key] || false;
         return `
           <section class="editor-card ${collapsed ? "collapsed" : ""}">
-            <button type="button" class="editor-card-header" data-section-key="${key}">
+            <button type="button" class="editor-card-header" data-section-key="${key}" aria-expanded="${!collapsed}" aria-controls="editor-body-${key}">
               <span><span class="icon">${icon}</span>${title}</span>
               <span class="arrow">▼</span>
             </button>
-            <div class="editor-card-body">${bodyHtml}</div>
+            <div class="editor-card-body" id="editor-body-${key}">${bodyHtml}</div>
           </section>
         `;
       }
@@ -980,6 +1438,7 @@
 
       function renderPersonalSection() {
         return `
+          <button type="button" class="btn-small primary" data-action="import-linkedin">Import details from LinkedIn</button>
           <div class="field-row">
             <div class="field">
               <label for="name">Name</label>
